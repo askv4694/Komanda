@@ -1,0 +1,93 @@
+---
+title: "2darbas2"
+author: "Asta Kvedaraite & Marius Survila"
+date: "April 1, 2020"
+output: html_document
+---
+
+```{r}
+library(minfi)
+inp <- dirname(getwd())
+path<- file.path(inp,"output", "RGset.rds")
+
+target <- readRDS(path)
+
+pd <- pData(target)
+as.data.frame(pd[2:4,])
+rm(pd)
+```
+
+#7. p-val > 0.01 => unreliable\
+Removes samples that have > 1%  unreliable values\
+(count unreliable values / count all values > 0.01)
+```{r}
+
+if (require(minfi)) {
+  failed <- detectionP(target) > 0.01
+  #2 - column, 1- row in a matrix
+  ind <- which(apply(failed, 2, function(x) (count(x)/length(x))) > 0.01)
+  ind <- as.numeric(gsub(".* ", "",ind))
+}
+target <- target[,-ind]
+dim(target)
+rm(ind)
+```
+
+#8.Normalisation with peprocessSWAN - \
+Subset-Quantile Within Array Normalisation \
+For Illumina Infinium HumanMethylation450 BeadChips.\
+It allows Infinium I and II type probes on a single\
+array to be normalized together.\
+
+Also deleting all rows with more than 1% unreliable data
+```{r}
+MSet.swan <- preprocessSWAN(target)
+
+if (require(minfi)) {
+   #2 - column, 1- row in a matrix
+  ind <- which(apply(failed, 1, function(x) (count(x)/length(x))) > 0.01)
+  ind <- as.numeric(gsub(".* ", "",ind))
+}
+MSet.swan <- MSet.swan[-ind,]
+dim(MSet.swan)
+
+rm(target)
+rm(ind)
+rm(failed)
+```
+
+#10. Drop positions with "CH" and \
+#SNP - positions that are near DNR polymorphism\
+(dropRS)
+
+```{r}
+MSet.swan <- dropMethylationLoci(MSet.swan, dropRS = TRUE, dropCH = TRUE)
+dim(MSet.swan)
+
+```
+
+# 11 Saving beta, pData and annotation to rds
+```{r}
+beta <- getBeta(MSet.swan)
+dim(beta)
+
+path<- file.path(inp,"output", "beta.rds")
+saveRDS(beta, path)
+
+rm(beta)
+
+data <- pData(MSet.swan)
+
+path<- file.path(inp,"output", "pData.rds")
+saveRDS(data, path)
+
+rm(data)
+
+annotation <- getAnnotation(MSet.swan)
+
+path<- file.path(inp,"output", "annotation.rds")
+saveRDS(annotation, path)
+
+rm(annotation)
+
+```

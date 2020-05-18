@@ -1,0 +1,293 @@
+---
+title: "Kokybės kontrolė"
+author: "Asta Kvedaraitė & Marius Survila"
+date: "4/27/2020"
+output: html_document
+---
+
+```{r setup, eval = FALSE, include=FALSE}
+
+data <- read.csv("../input/GSE125895_samplekey.csv", as.is = TRUE)
+
+data$sentrix_id <- sapply(strsplit(basename(data$supplementary_file.1), "_"), "[", 2)
+
+#Remove unnecessary columns
+data <- data[-c(3:5,7,24,26,28,29,32:34,36:46,48,49)]
+
+head(data)
+```
+
+```{r eval = FALSE, echo=FALSE}
+#Renaming columns to more obvious names and simplifying data
+names(data)[names(data) == "title"] <- "sample_name"
+data$sample_name <- gsub("sample_plate:", "", data$sample_name)
+
+names(data)[names(data) == "geo_accession"] <- "slide"
+
+
+names(data)[names(data) == "characteristics_ch1"] <- "sample_plate"
+data$sample_plate <- gsub("sample_plate:", "", data$sample_plate)
+
+names(data)[names(data) == "characteristics_ch1.2"] <- "brNum"
+data$brNum <- gsub("brnum: ", "", data$brNum)
+
+names(data)[names(data) == "characteristics_ch1.3"] <- "tissue"
+data$tissue <- gsub("brnum: ", "", data$tissue)
+
+names(data)[names(data) == "characteristics_ch1.4"] <- "tissue_region"
+data$tissue_region <- gsub("tissue region: ", "", data$tissue_region)
+
+names(data)[names(data) == "characteristics_ch1.5"] <- "sample"
+data$sample <- gsub("disease state \\(dx\\): ", "", data$sample)
+
+
+names(data)[names(data) == "characteristics_ch1.6"] <- "age"
+data$age <- gsub("age: ", "", data$age)
+data$age <- as.integer(as.numeric(data$age))
+
+names(data)[names(data) == "characteristics_ch1.7"] <- "sex"
+data$sex <- gsub("Sex: ", "", data$sex)
+
+names(data)[names(data) == "characteristics_ch1.8"] <- "race"
+data$race <- gsub("race: ", "", data$race)
+
+names(data)[names(data) == "characteristics_ch1.9"] <- "negcontrol_pc1"
+data$negcontrol_pc1 <- gsub("negcontrol_pc1: ", "", data$negcontrol_pc1)
+
+names(data)[names(data) == "characteristics_ch1.10"] <- "negcontrol_pc2"
+data$negcontrol_pc2 <- gsub("negcontrol_pc2: ", "", data$negcontrol_pc2)
+
+names(data)[names(data) == "characteristics_ch1.11"] <- "neun_pos"
+data$neun_pos <- gsub("neun_pos: ", "", data$neun_pos)
+
+names(data)[names(data) == "characteristics_ch1.12"] <- "snppc1"
+data$snppc1 <- gsub("snppc1: ", "", data$snppc1)
+
+names(data)[names(data) == "characteristics_ch1.1"] <- "Array"
+data$Array <- gsub("sentrix_position: ", "", data$Array)
+
+
+dir <- dirname(getwd())
+baseDir<- file.path(dir,"input","GSE125895","supplement", "GSE125895_idat","/")
+names(data)[names(data) == "supplementary_file"] <- "Basename"
+
+data$Basename <- gsub("ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM3584nnn/.*/suppl/", baseDir, data$Basename)
+data$Basename <- gsub("_Red.idat.gz|_Grn.idat.gz", "", data$Basename)
+
+data$sample_id <- gsub(baseDir, "", data$Basename)
+
+head(data)
+#beta - pataisyti duomenys, atrinkti reikalingi
+beta <- readRDS("../output/betab.rds")
+cols <- colnames(beta)
+#Paliekami tik tie samples, kurie tinkami (Pagal beta)
+data<-data[match(cols, data$sample_id),]
+
+#Išsaugomi pataisyti samplekey duomenys
+
+write.csv(data, "../output/correctedSample.csv")
+```
+
+##1. Kokybės kontrolė : metilinamo tankio funkcijos tarp CpG salų elementų \
+Kiekvienai pozicinei eilutei paskaičiuojamas tos eilutės mėginių vidurkis.\
+```{r}
+anno <- readRDS("../output/annotation.rds")
+beta <- readRDS("../output/betab.rds")
+data <- read.csv("../output/correctedSample.csv")
+
+n<- length(rownames(beta))
+
+#skaičiuoja vidurkius
+means <- matrix(ncol=2, nrow=n)
+for(i in 1:n){
+
+  means[i,] <- c((rownames(beta)[i]), mean(beta[i,]))
+}
+colnames(means) <- c("name", "mean")
+head(as.data.frame(means))
+```
+
+
+```{r echo=FALSE}
+#Funkcija, skaičiuoja pagal island
+relation<- function(name, beta, howtocall){
+  relate <- beta[name, ]
+  den <- density(relate)
+  den$data.name <- howtocall
+  return(den)
+}
+  
+```
+#Kiekvienai salos grupei skaičiuoajamas CpG tankis.\
+Šiuo atveju yra 6 salos. 
+```{r echo=FALSE}
+islands <- unique(anno$Relation_to_Island)
+islands
+
+isl1 <- anno$Name[anno$Relation_to_Island == islands[1]]
+island1 <- relation(isl1, beta, islands[1])
+island1
+
+isl2 <- anno$Name[anno$Relation_to_Island == islands[2]]
+island2 <- relation(isl2, beta, islands[2])
+island2
+
+
+isl3 <- anno$Name[anno$Relation_to_Island == islands[3]]
+island3 <- relation(isl3, beta, islands[3])
+island3
+
+isl4 <- anno$Name[anno$Relation_to_Island == islands[4]]
+island4 <- relation(isl4, beta, islands[4])
+island4
+
+isl5 <- anno$Name[anno$Relation_to_Island == islands[5]]
+island5 <- relation(isl5, beta, islands[5])
+island5
+
+isl6 <- anno$Name[anno$Relation_to_Island == islands[6]]
+island6 <- relation(isl6, beta, islands[6])
+island6
+
+#relation(beta)
+
+
+```
+# Grafike pavaizduota kiekvienos salos(pagal spalvas legendoje) tankio pasiskirstymai.\
+X ašis grafike rodo tikimybę gauti x reikšmę.
+```{r}
+colors <- c("red","yellow", "green", "gold", "lightblue" ,"blue" ) 
+plot(island1, col = colors[1], main = "Relation_to_Islands", xlab = NA)
+lines(island2, col = colors[2])
+lines(island3, col = colors[3])
+lines(island4, col = colors[4])
+lines(island5, col = colors[5])
+lines(island6, col = colors[6])
+legend("top",
+  c(islands),
+  fill=c(colors)
+)
+```
+
+
+# 2. Naudojamas hierarchinis klasterizavimas.\
+Plot (be mėginių vardų) pavaizduoja atstumų dydžius tarp mėginių.\
+Mėginiai užima labai daug vietos, todėl atvaizdavimas su mėginių pavadinimais nėra prasmingas,\
+nes medis tiesiog nesimato.
+```{r}
+
+hc<-hclust(as.dist(1-cor(beta)), method = "complete")
+plot(hc, xlab="Samples", main="Dissimilarity = 1 - Correlation", labels= FALSE)
+```
+
+```{r echo=FALSE}
+library(WGCNA)
+```
+#Dendograma mėginiams pavaizduoti. \
+Mėginių pavadinimai atitinkamai paversti į spalvas.\
+Mėginiai x ašyje yra sutampančios grupės. Jos susidarė dėl panašaus atstumo koreliuojant.\
+Y ašyje matomi panašūs atstumai - jie yra maži.
+Positions Nurodo pozicijas pagal spalvą( toliau yra legenda, kurioje nurodytos spalvų reikšmės).
+Taip pat parodyta lytis ir tiriamieji - sveikas asmuo ar sergantis.
+```{r , fig.width=15}
+head(data)
+unique(data$source_name_ch1)
+data$loc_to_num <- data$source_name_ch1
+data$loc_to_num <- gsub("DLPFC", 1, data$loc_to_num)
+data$loc_to_num <- gsub("ERC", 2, data$loc_to_num)
+data$loc_to_num <- gsub("HIPPO", 3, data$loc_to_num)
+data$loc_to_num <- as.integer(data$loc_to_num)
+
+
+plotDendroAndColors(hc, labels2colors(data[,c("source_name_ch1", "sex", "sample")]), 
+  main = "Sample dendrogram and trait heatmap",
+  dendroLabels=data$loc_to_num,
+  addGuide = TRUE,
+  groupLabels = c("Position", "Gender", "Sample")
+  )
+```
+
+
+```{r}
+cols <- data.frame(labels2colors(unique(data[,c("source_name_ch1", "sex", "sample")])), unique(data[,c("source_name_ch1", "sex", "sample")]))
+col1 <- c(unique(as.character(cols$X1)), unique(as.character(cols$X2)), unique(as.character(cols$X3)))
+col2 <- c(unique(as.character(cols$source_name_ch1)), unique(as.character(cols$sex)), unique(as.character(cols$sample)))
+
+plot(NULL,xaxt='n',yaxt='n',bty='n',ylab='',xlab='', xlim=0:1, ylim=0:1) 
+legend("topleft", legend = col2,
+       fill = col1)
+
+#install.packages("BiocManager") 
+#BiocManager::install("WGCNA")
+
+```
+
+
+# 3. Naudojamas heatmap.\
+Surandami variabiliausi duomenys t.y. surikiuojami ir naudojami pirmieji 5000 pozicijų.\
+Heatmap pavaizduoja hierarchinį klasterizavimą, reikšmės pakeistos spalvomis.
+Raudona reiškia mažą reikšmę. Šviesesnė spalva reiškia didesnę.
+```{r , fig.width=25}
+rowvariances <- apply(beta,1,var)
+
+orderedVarianceIndexes <- order(rowvariances,decreasing = TRUE)
+heatmap(beta[orderedVarianceIndexes[1:5000], ], Colv = NA,
+        xlab="Location", ylab="Sentrix Id", 
+        labRow = data$sentrix_id, 
+        labCol = data$source_name_ch1,
+        main="heatmap")
+```
+
+
+# 4. Principinių komponenčių analizė.
+Iš grfiko, galime matyti, kad daugiausia variacijų sudaro pirmos 3 komponentės.
+Visos kitos komponentės turi mažai variacijų.
+```{r}
+components <- prcomp(t(beta))
+screeplot(components, main = "Components")
+```
+
+
+Poruojant komponentes, kai kurios poros turi panašumų pvz (PC4 ir PC5), kai mažėja PC4, mažės ir PC5.
+```{r}
+components$x[1:5,1:2]
+
+pairs(components$x[,1:5], col = labels2colors(data$source_name_ch1), main = "PCA-plot", pch = data$loc_to_num)
+```
+
+
+# 5. Pirmoji principinė komponentė turi dideles reikšmes, tik vėliau(žiūrint į apačią) smarkiai mažėja.
+Raudona reiškia dideles reikšmes, geltona - mažas.
+Likusios komponentės yra panašesnės. Ne tokie dideli skirtumai kaip pirmoje komponentėje.
+Šitaip vaizduojant duomenų matricą, galima greičiau rasti kintamuosius.
+Šiuo atveju komponenčių ir mėginių pasiskirstymą.
+```{r , fig.height=5}
+
+heatmap(components$x[,1:5],  Colv = NA,
+        labRow = data$sample)
+#heatmap(components$rotation)
+
+```
+
+```{r echo=FALSE}
+if (!require("plotly"))reinstall.packages("plotly")
+library(plotly)
+```
+
+Interaktyvus heatmap, kuris nurodo mėginių ir komponenčių reikšmes.
+```{r}
+x<-colnames(components$x)
+y<- rownames(components$x)
+
+p <- plot_ly(x=x, y=y, 
+            z = components$x, 
+            type = "heatmap", 
+            colorscale= "blues"
+            ) %>%
+    layout(xaxis = list(title="Components"), yaxis = list(title="Samples"))
+p
+
+```
+```{r echo=FALSE}
+```
+

@@ -1,0 +1,130 @@
+---
+title: "2darbas"
+author: "Asta Kvedaraite & Marius Survila"
+date: "March 26, 2020"
+output: html_document
+---
+```{r}
+#Install minfiData package if needed
+
+#  if (!requireNamespace("BiocManager", quietly = TRUE))
+#      install.packages("BiocManager")
+#  BiocManager::install("minfiData")
+
+```
+
+```{r}
+
+dir <- dirname(getwd())
+baseDir<- file.path(dir,"input","GSE125895","supplement", "GSE125895_idat","/")
+
+```
+#Read samplekey data and remove unnecessary columns
+```{r}
+inp <- file.path(dir, "input", "GSE125895_samplekey.csv")
+data <- read.csv(inp, as.is = TRUE)
+rm(inp)
+
+#Remove unnecessary columns
+data <- data[-c(3:5,7,24,26,28,29,32:34,36:46,48,49)]
+
+head(data)
+```
+#Renaming columns to more obvious names and simplifying data
+```{r}
+names(data)[names(data) == "title"] <- "sample_name"
+data$sample_name <- gsub("sample_plate:", "", data$sample_name)
+
+names(data)[names(data) == "geo_accession"] <- "slide"
+
+
+names(data)[names(data) == "characteristics_ch1"] <- "sample_plate"
+data$sample_plate <- gsub("sample_plate:", "", data$sample_plate)
+
+names(data)[names(data) == "characteristics_ch1.2"] <- "brNum"
+data$brNum <- gsub("brnum: ", "", data$brNum)
+
+names(data)[names(data) == "characteristics_ch1.3"] <- "tissue"
+data$tissue <- gsub("brnum: ", "", data$tissue)
+
+names(data)[names(data) == "characteristics_ch1.4"] <- "tissue_region"
+data$tissue_region <- gsub("tissue region: ", "", data$tissue_region)
+
+names(data)[names(data) == "characteristics_ch1.5"] <- "sample"
+data$sample <- gsub("disease state \\(dx\\): ", "", data$sample)
+
+
+names(data)[names(data) == "characteristics_ch1.6"] <- "age"
+data$age <- gsub("age: ", "", data$age)
+data$age <- as.integer(as.numeric(data$age))
+
+names(data)[names(data) == "characteristics_ch1.7"] <- "sex"
+data$sex <- gsub("Sex: ", "", data$sex)
+
+names(data)[names(data) == "characteristics_ch1.8"] <- "race"
+data$race <- gsub("race: ", "", data$race)
+
+names(data)[names(data) == "characteristics_ch1.9"] <- "negcontrol_pc1"
+data$negcontrol_pc1 <- gsub("negcontrol_pc1: ", "", data$negcontrol_pc1)
+
+names(data)[names(data) == "characteristics_ch1.10"] <- "negcontrol_pc2"
+data$negcontrol_pc2 <- gsub("negcontrol_pc2: ", "", data$negcontrol_pc2)
+
+names(data)[names(data) == "characteristics_ch1.11"] <- "neun_pos"
+data$neun_pos <- gsub("neun_pos: ", "", data$neun_pos)
+
+names(data)[names(data) == "characteristics_ch1.12"] <- "snppc1"
+data$snppc1 <- gsub("snppc1: ", "", data$snppc1)
+
+names(data)[names(data) == "characteristics_ch1.1"] <- "Array"
+data$Array <- gsub("sentrix_position: ", "", data$Array)
+
+
+names(data)[names(data) == "supplementary_file"] <- "Basename"
+data$Basename <- gsub("ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM3584nnn/.*/suppl/", baseDir, data$Basename)
+data$Basename <- gsub("_Red.idat.gz|_Grn.idat.gz", "", data$Basename)
+#head(data$Basename)
+head(data)
+
+```
+#Reading idat files and creating RGChannelSet
+```{r, echo = FALSE}
+library(minfi)
+```
+
+```{r}
+RGset <- read.metharray.exp(targets = data)
+
+output<- file.path(dir, "output", "RGset.rds")
+saveRDS(RGset, file = output)
+rm(data)
+rm(output)
+```
+#check for column count\
+There are `r nrow(RGset)` rows - methylated estimates\
+and `r ncol(RGset)` columns - samples\
+Each column has more column data (sample_name ,age, gender, etc)
+```{r}
+RGset
+```
+#Shows several samples
+```{r}
+
+#show several rows 
+pd <- pData(RGset)
+
+#several samples
+as.data.frame(pd[2:4, c(1, 2, 7, 8)])
+rm(pd)
+
+```
+
+#Shows genomic position
+```{r}
+manifest <- getManifest(RGset)
+manifest
+as.data.frame(head(getProbeInfo(manifest)))
+rm(manifest)
+```
+
+

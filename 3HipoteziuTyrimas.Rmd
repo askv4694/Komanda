@@ -1,0 +1,44 @@
+---
+title: "Hipotezių testas"
+author: "Asta Kvedaraitė & Marius Survila"
+date: "5/18/2020"
+output: html_document
+---
+
+```{r echo = FALSE, message=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE,
+  error = TRUE,
+  echo = FALSE 
+)
+```
+
+# Lyginamos grupės: sveiki/sergantys ir jų amžius.
+```{r}
+sample <- read.csv("../output/correctedSample.csv")
+age <- sample$age
+alzheimer <- sample$sample
+test <- t.test(age ~ alzheimer)
+test$statistic[[1]]
+```
+Norint nustatyti sveikų ir sergančių amžiaus vidurkį, buvo atliktas T testas dviem nepriklausomoms grupėms.
+Sveikų žmonių grupės amžiaus vidurkis yra `r test$estimate[[2]]`, o sergančiųjų ažmiaus vidurkis = `r test$estimate[[1]]`.
+P-reikšmė = `r test$p.value`, `r test$statistic[[1]]`.
+
+```{r}
+plot(sample$age~ sample$sample, main= "Sveikų ir sergančių amžiaus pasiskirstymas", xlab = NA, ylab ="Age")
+
+```
+```{r}
+if (!require("matrixTests")) install.packages("matrixTests")
+library("matrixTests")
+data <- readRDS("../output/betab.rds")
+nrow(data)
+head(matrix.t.test(data))
+
+
+
+array
+
+```
+
