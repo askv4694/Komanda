@@ -29,16 +29,23 @@ P-reikšmė = `r test$p.value`, `r test$statistic[[1]]`.
 plot(sample$age~ sample$sample, main= "Sveikų ir sergančių amžiaus pasiskirstymas", xlab = NA, ylab ="Age")
 
 ```
+
+
 ```{r}
 if (!require("matrixTests")) install.packages("matrixTests")
 library("matrixTests")
+library("ggplot2")
+library("tidyverse")
 data <- readRDS("../output/betab.rds")
 nrow(data)
-head(matrix.t.test(data))
 
+dfdata <- matrixTests::row_t_onesample(data)
+dfdata <- dfdata[order(dfdata$statistic, decreasing = TRUE),]
+df <- rownames(dfdata[1:5,])
+df <- data[df,]
+df <- t(df)
+#ggplot(as.data.frame(df), aes(x = colnames(df), y = df[,1:5]))
 
-
-array
 
 ```
 
