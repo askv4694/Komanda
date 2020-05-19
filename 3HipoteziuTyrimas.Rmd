@@ -42,10 +42,12 @@ nrow(data)
 dfdata <- matrixTests::row_t_onesample(data)
 dfdata <- dfdata[order(dfdata$statistic, decreasing = TRUE),]
 df <- rownames(dfdata[1:5,])
-df <- data[df,]
-df <- t(df)
-#ggplot(as.data.frame(df), aes(x = colnames(df), y = df[,1:5]))
-
+df <- as.data.frame(data[df,])
+df <- as.data.frame(t(df))
+df$sample <- sample$sample
+head(df)
+ggplot(as.data.frame(df), aes(x = rownames(df), y = df[,1])) +
+  geom_point(color = "red")
 
 ```
 
