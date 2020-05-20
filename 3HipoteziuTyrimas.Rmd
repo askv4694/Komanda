@@ -47,19 +47,26 @@ dfdata <- dfdata[1:5,]
 df <- rownames(dfdata[1:5,])
 df <- data[df,]
 df <- as.data.frame(t(df))
-df
 df[] <- lapply(df, function(x) {
     if(is.double(x)) as.numeric(as.character(x)) else as.character(x)
 })
-df
-df$sample <- datasample$sample
+df$sample <- sample$sample
 library(data.table)
 df <- setDT(df, keep.rownames = TRUE)[]
 colnames(df)[1] <- "Sample_names"
 df$sample <- sample$sample
-df
-ggplot(df, aes(x = df[,1], y = df[,2], color = factor(df$sample))) +
+
+ggplot(df, aes(x = df$Sample_names, y = df$cg00812634, color = factor(df$sample))) +
    geom_point()
+ggplot(df, aes(x = df$Sample_names, y = df$cg01814152, color = factor(df$sample))) +
+   geom_point()
+ggplot(df, aes(x = df$Sample_names, y = df$cg02971392, color = factor(df$sample))) +
+   geom_point()
+ggplot(df, aes(x = df$Sample_names, y = df$cg02973417, color = factor(df$sample))) +
+   geom_point()
+ggplot(df, aes(x = df$Sample_names, y = df$cg03748858, color = factor(df$sample))) +
+   geom_point()
+
 ```
 
 ```{r}
@@ -74,17 +81,6 @@ maximum <- max(df[,2:6])
 Žemiau grafike pavaizduotos 5 metilintos eilutės, turinčios didžiausius skirtumus, kurie buvo gauti naudojant T test kiekvienai eilutei. Mūsų reikšmės - mažiausia(`r minimum`) ir didžiausia(`r maximum`) parodo, jog grafike esančios reikšmės yra teisingai nurodytame rėžyje.
 
 ```{r}
-#cg27441228,cg10925417,cg11709150,cg25753567,cg17339956
-#df %>% select(Sample_names,cg27441228,cg10925417,cg11709150,cg25753567,cg17339956, sample) %>%
-#  pivot_longer(., cols = c(cg27441228,cg10925417,cg11709150,cg25753567,cg17339956), 
-#               names_to = "Var", values_to = "Val") %>%
-#  ggplot(aes(x = Var, y = Val, color = factor(sample))) +
-#   geom_point() + 
-#  theme(axis.text.x=element_text(size=14, angle = 45),
-#        axis.text.y=element_text(size=14),
-#        axis.title=element_text(size=20,face="bold")) +
-#    labs(title = "5 Metilintos pozicijos 185 mėginiuose, turinčios didžiausius skirtumus",
-#         xlab = "Metilintos eilutės" , ylab = "Eilučių reikšmės")
 
 ```
 
