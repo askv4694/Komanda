@@ -87,5 +87,38 @@ df %>% select(Sample_names,cg27441228,cg10925417,cg11709150,cg25753567,cg1733995
 
 ```{r}
 
+##NIEKO NEPADARIAU NESUPRANTU  (3)
+getArray <- function(alfa){
+  dfdata <- matrixTests::row_t_onesample(x = data,conf.level = 1 - alfa)
+  rez <- dfdata[round(p.adjust(dfdata$pvalue),3) >= alfa,]
+  return (rez)
+}
+sampleGRoup <- sample[,c(28,12)]
+head(sampleGRoup)
+
+df <- t(data[1:5,1:5])
+df <- as.data.frame(df)
+df <- setDT(df, keep.rownames = TRUE)[]
+df
+colnames(df)[1] <- "sample_id"
+df[] <- lapply(df, function(x) {
+    if(is.double(x)) as.numeric(as.character(x)) else as.character(x)
+})
+
+#df1 <- matrixTests::row_t_paired(x = df , y = sampleGRoup[1:5,] ,conf.level = 1 - alfa)
+
+#control <- data[,]
+#df1 <- getArray(0.1)
+#nrow(df1)
+#df2 <- getArray(0.05)
+#df3 <- getArray(0.01)
+#nrow(df2)
+#nrow(df3)
+#head(dfdata)
+
+```
+
+```{r}
+
 
 ```
