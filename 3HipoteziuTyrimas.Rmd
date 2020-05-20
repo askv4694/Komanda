@@ -99,7 +99,7 @@ maximum <- max(df[,2:6])
 ```
 Aukščiau, grafike pavaizduotos 5 metilintos eilutės, turinčios didžiausius skirtumus, kurie buvo gauti naudojant T test kiekvienai eilutei. Mūsų reikšmės - mažiausia(`r minimum`) ir didžiausia(`r maximum`) parodo, jog grafike esančios reikšmės yra teisingai nurodytame rėžyje.
 
-
+a
 ```{r}
 
 ##NIEKO NEPADARIAU NESUPRANTU  (3)
