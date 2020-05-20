@@ -33,21 +33,64 @@ plot(sample$age~ sample$sample, main= "Sveikų ir sergančių amžiaus pasiskirs
 
 ```{r}
 if (!require("matrixTests")) install.packages("matrixTests")
+if (!require("reshape2")) install.packages("reshape2")
 library("matrixTests")
-library("ggplot2")
-library("tidyverse")
+library(ggplot2)
+library(grid)
+library(gridExtra)
+library(reshape2)
 data <- readRDS("../output/betab.rds")
 nrow(data)
 
+
 dfdata <- matrixTests::row_t_onesample(data)
 dfdata <- dfdata[order(dfdata$statistic, decreasing = TRUE),]
+head(dfdata)
+dfdata <- dfdata[1:5,]
 df <- rownames(dfdata[1:5,])
-df <- as.data.frame(data[df,])
+df <- data[df,]
 df <- as.data.frame(t(df))
-df$sample <- sample$sample
+
 head(df)
-ggplot(as.data.frame(df), aes(x = rownames(df), y = df[,1])) +
-  geom_point(color = "red")
+#control <- df[df$sample == "Control",]
+#alzheimer <- df[df$sample == "Alzheimer",]
+#ggplot(df, aes(x = rownames(df), y = df[,1])) +
+#  geom_point(color = "red")
+head(df)
+  df[] <- lapply(df, function(x) {
+    if(is.factor(x)) as.numeric(as.character(x)) else x
+})
+#df$sample <- sample$sample
+sapply(data, typeof)
+```
+
+```{r}
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+df %>% select(colnames(df), df[,1:5], sample) %>%
+  pivot_longer(., cols = c(df[,1:5]), names_to = "Var", values_to = "Val") %>%
+  ggplot(aes(x = Var, y = Val, fill = cat)) +
+  geom_boxplot()
+
+```
+
+
+```{r}
+ggplot(df, aes(rownames(df), value, col=variable ,color = factor(sample))) +
+    geom_point() + 
+    stat_smooth() 
+    labs(subtitle = "aes(color) further divides data into more groups")
+
+# Separate plots
+ggplot(d, aes(rownames(df),value)) + 
+  geom_point() + 
+  stat_smooth() +
+  facet_wrap(~variable)
+```
+
+```{r}
+
 
 ```
 
