@@ -90,13 +90,38 @@ df %>% select(Sample_names,cg27441228,cg10925417,cg11709150,cg25753567,cg1733995
 ##NIEKO NEPADARIAU NESUPRANTU  (3)
 getArray <- function(alfa){
   dfdata <- matrixTests::row_t_onesample(x = data,conf.level = 1 - alfa)
-  rez <- dfdata[round(p.adjust(dfdata$pvalue),3) >= alfa,]
+  pval <- round(p.adjust(dfdata$pvalue),3)
+  rez <- dfdata[pval >= alfa,]
   return (rez)
 }
+
+
+control <- sample$sample_id[sample$sample == "Control"]
+length(control)
+control[1]
+alzheimer <- sample$sample_id[sample$sample == "Alzheimer"]
+length(alzheimer)
+alzheimer
+
+
+df <- data
+df <- as.data.frame(df)
+sss <- df[,control]
+
+as.data.frame(sss)
+
+
+dfdata <- matrixTests::row_t_onesample(x = sss[1:5,],conf.level = 1 - 0.05)
+  pval <- round(p.adjust(dfdata$pvalue),3)
+  rez <- dfdata[pval >= 0.1,]
+dfdata$pvalue
+pval
 sampleGRoup <- sample[,c(28,12)]
 head(sampleGRoup)
 
+
 df <- t(data[1:5,1:5])
+df
 df <- as.data.frame(df)
 df <- setDT(df, keep.rownames = TRUE)[]
 df
@@ -105,8 +130,11 @@ df[] <- lapply(df, function(x) {
     if(is.double(x)) as.numeric(as.character(x)) else as.character(x)
 })
 
-#df1 <- matrixTests::row_t_paired(x = df , y = sampleGRoup[1:5,] ,conf.level = 1 - alfa)
 
+df1 <- matrixTests::row_t_paired(x = df$cg02004872 ,y = df$cg01707559 ,conf.level = 1 - 0.1)
+df1
+pvalues <- c(.002, .005, .015, .113, .222, .227, .454, .552, .663, .751)
+p.adjust(pvalues)
 #control <- data[,]
 #df1 <- getArray(0.1)
 #nrow(df1)
