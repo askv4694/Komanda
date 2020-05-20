@@ -100,23 +100,41 @@ Aukščiau, grafike pavaizduotos 5 metilintos eilutės, turinčios didžiausius 
 
 
 ```{r}
-control <- sample$sample_id[sample$sample == "Control"]
-dataCon <- as.data.frame(data)
-#colnames(data)
 
-getParray <- function(alpha){
-  test <- matrixTests::row_t_onesample(data,conf.level = 1 - alpha)
-  names <- rownames(test)[test$pvalue < alpha]
-  length(names)
+getParray <- function(data, alpha){
+  n <- 0
+  for (i in 1:ncol(data)){
+    names <- rownames(data)[ data[,i] < alpha]
+    n <- n + length(names)
+  }
   return (length(names))
 }
-alpha1 <- getParray(0.1)
-alpha1 <- getParray(0.01)
-alpha1
+test
 
+control <- sample$sample_id[sample$sample == "Control"]
+dataCon <- as.data.frame(data)
+sick <- sample$sample_id[sample$sample == "Alzheimer"]
+dataSick <- as.data.frame(data)
 
-t.test(df[,2], conf.level = 0.9 )
-t.test(df[,2], conf.level = 0.95)
-t.test(df[,2], conf.level = 0.99)
+dataCon <- dataCon[, control]
+dataCon
+dataSick <- dataSick[, sick]
+dataSick
+
+con1 <- getParray(dataCon ,0.1 )
+con2 <- getParray(dataCon ,0.05)
+con3 <- getParray(dataCon ,0.01)
+#alpha1 <- getParray(0.01)
+sick1 <- getParray(dataSick ,0.1 )
+sick2 <- getParray(dataSick ,0.05)
+sick3 <- getParray(dataSick ,0.01)
+sick1
+
+con1
+
+#test <- matrixTests::row_t_onesample(dataCon)
+#p <- p.adjust(test$pvalue, method = "fdr")
+#test
+#p[1:20]
 
 ```
