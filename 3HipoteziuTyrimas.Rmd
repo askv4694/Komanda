@@ -57,14 +57,34 @@ colnames(df)[1] <- "Sample_names"
 df$sample <- sample$sample
 
 ggplot(df, aes(x = df$Sample_names, y = df$cg00812634, color = factor(df$sample))) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+  labs(y = "Pasiskirstymas")+
    geom_point()
 ggplot(df, aes(x = df$Sample_names, y = df$cg01814152, color = factor(df$sample))) +
+   theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+  labs(y = "Pasiskirstymas")+
    geom_point()
 ggplot(df, aes(x = df$Sample_names, y = df$cg02971392, color = factor(df$sample))) +
+   theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+  labs(y = "Pasiskirstymas")+
    geom_point()
 ggplot(df, aes(x = df$Sample_names, y = df$cg02973417, color = factor(df$sample))) +
+   theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+  labs(y = "Pasiskirstymas")+
    geom_point()
 ggplot(df, aes(x = df$Sample_names, y = df$cg03748858, color = factor(df$sample))) +
+   theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+  labs(y = "Pasiskirstymas")+
    geom_point()
 
 ```
