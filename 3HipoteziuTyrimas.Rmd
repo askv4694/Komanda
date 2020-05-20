@@ -107,9 +107,9 @@ getParray <- function(data, alpha){
     names <- rownames(data)[ data[,i] < alpha]
     n <- n + length(names)
   }
-  return (length(names))
+  return(n)
 }
-test
+data[data[,1] < 0.01]
 
 control <- sample$sample_id[sample$sample == "Control"]
 dataCon <- as.data.frame(data)
@@ -120,8 +120,8 @@ dataCon <- dataCon[, control]
 dataCon
 dataSick <- dataSick[, sick]
 dataSick
-
 con1 <- getParray(dataCon ,0.1 )
+
 con2 <- getParray(dataCon ,0.05)
 con3 <- getParray(dataCon ,0.01)
 #alpha1 <- getParray(0.01)
@@ -130,11 +130,21 @@ sick2 <- getParray(dataSick ,0.05)
 sick3 <- getParray(dataSick ,0.01)
 sick1
 
+values <- data.frame("alpha" = c(0.1, 0.05, 0.01), "control" = c(con1, con2, con3),
+           "Alzheimer" = c(sick1, sick2, sick3))
 con1
 
-#test <- matrixTests::row_t_onesample(dataCon)
-#p <- p.adjust(test$pvalue, method = "fdr")
-#test
+test <- matrixTests::row_t_onesample(dataCon, conf.level = 0.05)
+p <- p.adjust(test$pvalue, method = "fdr")
+fdrCon <- length(p< 0.05)
+fdrCon
+test <- matrixTests::row_t_onesample(dataCon, conf.level = 0.05)
+p <- p.adjust(test$pvalue, method = "bonferroni")
+bonCon <- length(p < 0.05)
+bonCon
+
+
+
 #p[1:20]
 
 ```
