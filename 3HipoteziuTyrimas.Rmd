@@ -163,6 +163,7 @@ p.adjust(pvalues)
 ```
 
 ```{r}
-
-
+t.test(df[,2], conf.level = 0.9 )
+t.test(df[,2], conf.level = 0.95)
+t.test(df[,2], conf.level = 0.99)
 ```
