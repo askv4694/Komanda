@@ -45,52 +45,43 @@ nrow(data)
 
 dfdata <- matrixTests::row_t_onesample(data)
 dfdata <- dfdata[order(dfdata$statistic, decreasing = TRUE),]
-head(dfdata)
 dfdata <- dfdata[1:5,]
 df <- rownames(dfdata[1:5,])
 df <- data[df,]
 df <- as.data.frame(t(df))
 
-head(df)
-#control <- df[df$sample == "Control",]
-#alzheimer <- df[df$sample == "Alzheimer",]
-#ggplot(df, aes(x = rownames(df), y = df[,1])) +
-#  geom_point(color = "red")
-head(df)
-  df[] <- lapply(df, function(x) {
-    if(is.factor(x)) as.numeric(as.character(x)) else x
+df[] <- lapply(df, function(x) {
+    if(is.double(x)) as.numeric(as.character(x)) else as.character(x)
 })
-#df$sample <- sample$sample
-sapply(data, typeof)
+df
+df$sample <- sample$sample
+sapply(df, typeof)
+library(data.table)
+setDT(df, keep.rownames = TRUE)[]
+colnames(df)[1] <- "Sample_names"
+
 ```
 
 ```{r}
+
 library(tidyr)
 library(dplyr)
 library(ggplot2)
-df %>% select(colnames(df), df[,1:5], sample) %>%
-  pivot_longer(., cols = c(df[,1:5]), names_to = "Var", values_to = "Val") %>%
-  ggplot(aes(x = Var, y = Val, fill = cat)) +
-  geom_boxplot()
 
-```
+#cg27441228,cg10925417,cg11709150,cg25753567,cg17339956
+df %>% select(Sample_names,cg27441228,cg10925417,cg11709150,cg25753567,cg17339956, sample) %>%
+  pivot_longer(., cols = c(cg27441228,cg10925417,cg11709150,cg25753567,cg17339956), 
+               names_to = "Var", values_to = "Val") %>%
+  ggplot(aes(x = Var, y = Val, color = factor(sample))) +
+   geom_point() + 
+  theme(axis.text.x=element_text(size=12),
+        axis.text.y=element_text(size=14),
+        axis.title=element_text(size=20,face="bold")) +
+    labs(title = "5 Metilintos pozicijos 185 mėginiuose, turinčios didžiausius skirtumus")
 
-
-```{r}
-ggplot(df, aes(rownames(df), value, col=variable ,color = factor(sample))) +
-    geom_point() + 
-    stat_smooth() 
-    labs(subtitle = "aes(color) further divides data into more groups")
-
-# Separate plots
-ggplot(d, aes(rownames(df),value)) + 
-  geom_point() + 
-  stat_smooth() +
-  facet_wrap(~variable)
 ```
 
 ```{r}
 
 
 ```
-
