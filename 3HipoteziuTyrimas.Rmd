@@ -19,7 +19,6 @@ sample <- read.csv("../output/correctedSample.csv")
 age <- sample$age
 alzheimer <- sample$sample
 test <- t.test(age ~ alzheimer)
-test$statistic[[1]]
 ```
 Norint nustatyti sveikų ir sergančių amžiaus vidurkį, buvo atliktas T testas dviem nepriklausomoms grupėms.
 Sveikų žmonių grupės amžiaus vidurkis yra `r test$estimate[[2]]`, o sergančiųjų ažmiaus vidurkis = `r test$estimate[[1]]`.
@@ -40,7 +39,6 @@ library(grid)
 library(gridExtra)
 library(reshape2)
 data <- readRDS("../output/betab.rds")
-nrow(data)
 
 
 dfdata <- matrixTests::row_t_onesample(data)
@@ -53,11 +51,10 @@ df <- as.data.frame(t(df))
 df[] <- lapply(df, function(x) {
     if(is.double(x)) as.numeric(as.character(x)) else as.character(x)
 })
-df
 df$sample <- sample$sample
-sapply(df, typeof)
+
 library(data.table)
-setDT(df, keep.rownames = TRUE)[]
+df <- setDT(df, keep.rownames = TRUE)[]
 colnames(df)[1] <- "Sample_names"
 
 ```
@@ -67,17 +64,24 @@ colnames(df)[1] <- "Sample_names"
 library(tidyr)
 library(dplyr)
 library(ggplot2)
+minimum <- min(df[,2:6])
+maximum <- max(df[,2:6])
 
+```
+Žemiau grafike pavaizduotos 5 metilintos eilutės, turinčios didžiausius skirtumus, kurie buvo gauti naudojant T test kiekvienai eilutei. Mūsų reikšmės - mažiausia(`r minimum`) ir didžiausia(`r maximum`) parodo, jog grafike esančios reikšmės yra teisingai nurodytame rėžyje.
+
+```{r}
 #cg27441228,cg10925417,cg11709150,cg25753567,cg17339956
 df %>% select(Sample_names,cg27441228,cg10925417,cg11709150,cg25753567,cg17339956, sample) %>%
   pivot_longer(., cols = c(cg27441228,cg10925417,cg11709150,cg25753567,cg17339956), 
                names_to = "Var", values_to = "Val") %>%
   ggplot(aes(x = Var, y = Val, color = factor(sample))) +
    geom_point() + 
-  theme(axis.text.x=element_text(size=12),
+  theme(axis.text.x=element_text(size=14, angle = 45),
         axis.text.y=element_text(size=14),
         axis.title=element_text(size=20,face="bold")) +
-    labs(title = "5 Metilintos pozicijos 185 mėginiuose, turinčios didžiausius skirtumus")
+    labs(title = "5 Metilintos pozicijos 185 mėginiuose, turinčios didžiausius skirtumus",
+         xlab = "Metilintos eilutės" , ylab = "Eilučių reikšmės")
 
 ```
 
