@@ -47,8 +47,6 @@ con <- data[,names]
 alz <- data[ ,-c(names)]
 
 library(data.table)
-library(tidyverse)
-library(dplyr)
 library(ggplot2)
 
 ttest <- matrixTests::row_t_welch(alz, con)
@@ -102,16 +100,16 @@ printParray<- function(ptest){
   }
   #con ir alz <- dataframes 
   
-  afterp1 <- getParray(0.1)
-  afterp2 <- getParray(0.05)
-  afterp3 <- getParray(0.01)
+  afterp1 <<- getParray(0.1)
+  afterp2 <<- getParray(0.05)
+  afterp3 <<- getParray(0.01)
   
   
   p <- p.adjust(ptest$pvalue, method = "fdr")
-  fdrCon <- ttest[p < 0.05,]
+  fdrCon <<- ttest[p < 0.05,]
   
   p <- p.adjust(ptest$pvalue, method = "bonferroni")
-  boncon <- ttest[p < 0.05,]
+  boncon <<- ttest[p < 0.05,]
   
   values <- data.frame("alfa" = c(0.1, 0.05, 0.01, "fdr", "bonferroni"), 
                        "Eilutės" = c(nrow(afterp1), nrow(afterp2), nrow(afterp3),
@@ -166,6 +164,9 @@ gethistogram()
 ```
 
 ```{r}
+if (!require("moduleColor")) install.packages("moduleColor")
+library(moduleColor)
+
 getvolcano <- function(){
   afterp1$col <- ifelse(afterp1$mean.diff > 0, 6, 2)
   afterp2$col <- ifelse(afterp2$mean.diff > 0, 6, 2)
@@ -193,13 +194,15 @@ getvolcano()
 ```
 
 ```{r}
-if (!require("moduleColor")) install.packages("moduleColor")
-library(moduleColor)
 
-getrelations <- function(ptest, chromosome){
+getrelations <- function(ptest, chromosome, num){
   names <- rownames(anno)[anno$chr == chromosome]
   temp <- anno[names,]
-  chr <- ptest[names,]
+  if (num == 0){chr <- ptest[names,]}
+  else{
+    chr <- ptest
+  }
+  
   chr$cpg <- temp$Relation_to_Island
   rm(temp)
   #"Island"  "S_Shore" "OpenSea" "N_Shore" "S_Shelf" "N_Shelf"
@@ -229,7 +232,7 @@ Manhattan plot- yra grafikas, kuris parodo duomenis, kurie labiau išsiskiria i�
 tampa didžiausiomis pritaikant -log10.  
 
 ```{r}
-getrelations(ttest, "chrY")
+getrelations(ttest, "chrY", 0)
 ```
 
 Tiesinė regresija naudojant amžių ir būseną : serga ar neserga.
@@ -270,8 +273,6 @@ df$col <- ifelse(df$coef > 0, 6, 2)
 ```
 
 ```{r}
-df4[df$name] <- df$name
-
-getrelations(df, "chr11")
+getrelations(df, "chr11",1)
 
 ```
