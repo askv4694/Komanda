@@ -78,7 +78,7 @@ getplot<- function(names, array, compare, colname){
         axis.ticks.x=element_blank()) +
   labs(y = "Pasiskirstymas") +
   scale_colour_discrete("Samples") +
-  geom_point() 
+  geom_point()
 }
 
 ```
@@ -155,9 +155,15 @@ gethistogram<- function(){
          fill=c(c1, c2, c3, c4, c5))
 }
 
-gethistogram()
+
 ```
 
+Žemiau pavaizduotas grafikas rodo, kad mažėjant \(\alpha\), mažėja reikšmių kiekis (p-reikšmės), kurios yra patikimos.
+Tačiau po p reikšmių sulyginimo FDR ir Bonferroni metodais, dar labiau sumažėja patikimų p-reikšmių kiekis.
+```{r}
+
+gethistogram()
+```
 
 ```{r}
 getvolcano <- function(){
@@ -174,6 +180,14 @@ getvolcano <- function(){
   par(mfrow = c(1, 1))
 }
 
+```
+
+Volcano plot(grafikas) naudojamas daugiausia statistikoje, norint nurodyti p-reikšmes ir atstumą nuo grafo ašies(0).
+Jis padeda vizualiai identifikuoti genus, kurie turi didesnius atstumus nei kiti. Bioinformatikoje reikšmės
+pavaizduotos nuo ašies į dešinę pusę yra genai, skatinantys procesus ar kitus atsakus. O į kairę -  genai, kurie
+slopina procesus ar jo atsakus. O į viršų yra bilogiškai reikšmingi genai.
+
+```{r}
 getvolcano()
 
 ```
@@ -181,46 +195,83 @@ getvolcano()
 ```{r}
 if (!require("moduleColor")) install.packages("moduleColor")
 library(moduleColor)
-names <- rownames(anno)[anno$chr == "chrY"]
-temp <- anno[names,]
-chr <- ttest[names,]
-chr$cpg <- temp$Relation_to_Island
-rm(temp)
-#"Island"  "S_Shore" "OpenSea" "N_Shore" "S_Shelf" "N_Shelf"
-for (i in 1 : nrow(chr)){
-  if (chr$cpg[i] == "Island") chr$cpgnum[i] <- 4
-  else if (chr$cpg[i] == "S_Shore") chr$cpgnum[i] <- 2
-  else if (chr$cpg[i] == "OpenSea") chr$cpgnum[i] <- 1
-  else if (chr$cpg[i] == "N_Shore") chr$cpgnum[i] <- 12
-  else if (chr$cpg[i] == "S_Shelf") chr$cpgnum[i] <- 3
-  else if (chr$cpg[i] == "N_Shelf") chr$cpgnum[i] <- 6
+
+getrelations <- function(ptest, chromosome){
+  names <- rownames(anno)[anno$chr == chromosome]
+  temp <- anno[names,]
+  chr <- ptest[names,]
+  chr$cpg <- temp$Relation_to_Island
+  rm(temp)
+  #"Island"  "S_Shore" "OpenSea" "N_Shore" "S_Shelf" "N_Shelf"
+  for (i in 1 : nrow(chr)){
+    if (chr$cpg[i] == "Island") chr$cpgnum[i] <- 4
+    else if (chr$cpg[i] == "S_Shore") chr$cpgnum[i] <- 2
+    else if (chr$cpg[i] == "OpenSea") chr$cpgnum[i] <- 1
+    else if (chr$cpg[i] == "N_Shore") chr$cpgnum[i] <- 12
+    else if (chr$cpg[i] == "S_Shelf") chr$cpgnum[i] <- 3
+    else if (chr$cpg[i] == "N_Shelf") chr$cpgnum[i] <- 6
+  }
+  
+  par(mar = c(2, 4, 4, 8),                                  # Specify par parameters
+      xpd = TRUE)
+  plot(-log(chr$pvalue), col = labels2colors(chr$cpgnum), pch = 19, main = chromosome, 
+       xlab = "Pozicijos", ylab = "Reikšmės")
+  
+  legend("topright",inset = c(- 0.3, 0),legend= unique(chr$cpg), title = "Pagal CpG salas",
+         fill = labels2colors(unique(chr$cpgnum)))
+  
+  par(xpd=TRUE)
 }
 
 ```
 
+Manhattan plot- yra grafikas, kuris parodo duomenis, kurie labiau išsiskiria iš kitų, p-reikšmėmis. Mažiausios p-reikšmės
+tampa didžiausiomis pritaikant -log10.  
+
 ```{r}
-par(mar = c(2, 4, 4, 8),                                  # Specify par parameters
-    xpd = TRUE)
-plot(-log(chr$pvalue), col = labels2colors(chr$cpgnum), pch = 19, main = "Chromosoma Y", 
-     xlab = "Pozicijos", ylab = "Reikšmės")
-
-legend("topright",inset = c(- 0.3, 0),legend= unique(chr$cpg), title = "Pagal CpG salas",
-       fill = labels2colors(unique(chr$cpgnum)))
-
-par(xpd=TRUE)
+getrelations(ttest, "chrY")
 ```
-```{r}
-#df <- data.frame("name" =character(), "pval" =  numeric(),
-#                 "coef" = numeric(), stringsAsFactors = FALSE)
 
-#for (i in 1:nrow(data)){
+Tiesinė regresija naudojant amžių ir būseną : serga ar neserga.
+```{r}
+df <- data.frame("name" =character(), "pvalue" =  numeric(),
+                 "coef" = numeric(), stringsAsFactors = FALSE)
+chromo <- rownames(anno)[anno$chr == "chr11"]
+
+#for (i in 1:nrow(cdata)){
 #    lm0 <- lm(data[i,] ~ sample$age)
 #    lm1 <- lm(data[i,] ~ sample$age + sample$sample) 
 #    anv <- anova(lm0, lm1)
 #    df[i,] <- c(rownames(data)[i],anv$Pr[2],coef(lm1)[3])
 #    cat(i, "\r")
 #}
-#df
-#saveRDS(df, "../output/regression.rds")
+
+#saveRDS(df, "../output/chr11.rds")
+df <- readRDS("../output/chr11.rds")
+```
+
+Pasirinkta 11 chromosoma, viso turi `r nrow(df)` eilučių, iš kurių atrinktos patikimos p-value reikšmės.
+```{r}
+printParray(df)
+
+```
+
+Visos reikšmės panašios, pagal atitinkamą \(\alpha\) slenkstį.
+```{r}
+gethistogram()
+
+```
+```{r}
+
+df$col <- ifelse(df$coef > 0, 6, 2)
+ plot(df$coef,-log(df$pvalue), 
+       col = labels2colors(df$col),
+       xlab="mean difference", ylab="pvalues", main = "Volcano plot of pvalues")
+```
+
+```{r}
+df4[df$name] <- df$name
+
+getrelations(df, "chr11")
 
 ```
