@@ -118,51 +118,45 @@ ggplot(df, aes(x = df$Sample_names, y = df$cg03169557, color = factor(df$sample)
 
 
 ```{r}
-ttest <- matrixTests::row_t_welch(alz, con)
 
 getParray <- function(alpha){
-  names <- rownames(ttest)[ttest$pvalue < alpha]
-  return(names)
+  ttest <- ttest[ttest$pvalue < alpha,]
+  return(ttest)
 }
 #con ir alz <- dataframes 
 
-con1 <- getParray(0.1)
-con2 <- getParray(0.05)
-con3 <- getParray(0.01)
-length(con1)
+afterp1 <- getParray(0.1)
+afterp2 <- getParray(0.05)
+afterp3 <- getParray(0.01)
 
-afterp1 <- data[con1,]
-afterp2 <- data[con2,]
-afterp3 <- data[con3,]
 
 p <- p.adjust(ttest$pvalue, method = "fdr")
-fdrCon <- rownames(ttest)[p < 0.05]
-fdrCon <- data[fdrCon,]
+fdrCon <- ttest[p < 0.05,]
+
 p <- p.adjust(ttest$pvalue, method = "bonferroni")
-boncon <- rownames(ttest)[p < 0.05]
-boncon <- data[boncon,]
+boncon <- ttest[p < 0.05,]
 
 values <- data.frame("alfa" = c(0.1, 0.05, 0.01, "fdr", "bonferonni"), 
-                     "Eilutės" = c(length(con1), length(con2), length(con3),
-                                   length(fdrCon), length(boncon)))
+                     "Eilutės" = c(nrow(con1), nrow(con2), nrow(con3),
+                                   nrow(fdrCon), nrow(boncon)))
 
 knitr::kable(values)
 ```
 
 
 ```{r}
-hist(boncon, col = rgb(255,150,10,max = 255, alpha = 80),
+hist(boncon$pvalue, col = rgb(255,150,10,max = 255, alpha = 80),
      main = "Boneferroni histograma", xlab = "Reikšmės", ylab = "Dažnis")
 ```
 
 
 ```{r}
 
-hg1 <- hist(afterp1, plot = FALSE) # Save first histogram data
-hg2 <- hist(afterp2, plot = FALSE) # Save 2nd histogram data
-hg3 <- hist(afterp3, plot = FALSE)
-hgfdr <- hist(fdrCon, plot = FALSE)
-hgbon <- hist (boncon, plot = FALSE)
+hg1 <- hist(afterp1$pvalue, plot = FALSE) # Save first histogram data
+hg2 <- hist(afterp2$pvalue, plot = FALSE) # Save 2nd histogram data
+hg3 <- hist(afterp3$pvalue, plot = FALSE)
+hgfdr <- hist(fdrCon$pvalue, plot = FALSE)
+hgbon <- hist (boncon$pvalue, plot = FALSE)
 ```
 
 ```{r}
@@ -184,36 +178,21 @@ legend("top", c("0.1", "0.05", "0.01", "FDR", "BONFERONNI"),
 
 
 ```{r}
-if (!requireNamespace('BiocManager', quietly = TRUE))
-    install.packages('BiocManager')
-    BiocManager::install('EnhancedVolcano')
-if (!require('Dplot')) install.packages('Dplot')
-library(EnhancedVolcano)
 
-plot(log(con$pvalue))
-plot(con$pvalue)
+par(mfrow = c(2,3))
+plot(afterp1$mean.diff,-log(afterp1$pvalue))
+plot(afterp2$mean.diff,-log(afterp2$pvalue))
+plot(afterp3$mean.diff,-log(afterp3$pvalue))
+plot(fdrCon$mean.diff,-log(fdrCon$pvalue))
+plot(boncon$mean.diff,-log(boncon$pvalue))
 
+
+```
+```{r}
+par(mfrow = c(1, 1))
 ```
 
 ```{r}
-chrom <- as.data.frame(data[258,])
-chrom
-plot(-log(chrom))
 
 
 ```
-
-```{r}
-#con[] <- lapply(con, function(x) {
-#    if(is.double(x)) as.numeric(as.character(x)) else as.character(x)
-#})
-#con[1:20,]
-#EnhancedVolcano(con,
-#    x = 'log2FoldChange',
-#    y = 'pvalue')#
-
-#volcanoPlot(con$pvalue)
-
-```
-
-
