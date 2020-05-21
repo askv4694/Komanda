@@ -43,63 +43,65 @@ data <- readRDS("../output/betab.rds")
 anno <- readRDS("../output/annotation.rds")
 as.data.frame(anno)
 
-reg <- unique(sample$tissue_region)
-reg1 <- sample$sample_id[sample$tissue_region == reg[1]]
-reg2 <- sample$sample_id[sample$tissue_region == reg[2]]
-reg3 <- sample$sample_id[sample$tissue_region == reg[3]]
+names <- sample$sample_id[sample$sample == "Control"]
+con <- data[,names]
+alz <- data[ ,-c(names)]
 
-reg1 <- as.data.frame(data[,reg1])
-reg2 <- as.data.frame(data[,reg2])
-reg3 <- as.data.frame(data[,reg3])
-reg1
-```
-
-
-```{r}
-dfdata <- matrixTests::row_t_onesample(reg1)
-dfdata <- dfdata[order(dfdata$pvalue),]
-dfdata <- dfdata[1:5,]
-df <- rownames(dfdata[1:5,])
-df <- data[df,]
-df <- as.data.frame(t(df))
-df[] <- lapply(df, function(x) {
-    if(is.double(x)) as.numeric(as.character(x)) else as.character(x)
-})
-df$sample <- sample$sample
+ttest <- matrixTests::row_t_welch(alz, con)
+ord <- ttest[order(ttest$pvalue),]
+ord[1:5,]
+names <- rownames(ord[1:5,])
+df <- t(data[names,])
+df <- as.data.frame(df)
 library(data.table)
-df
 df <- setDT(df, keep.rownames = TRUE)[]
 colnames(df)[1] <- "Sample_names"
 df$sample <- sample$sample
+df
+
 
 ```
 
+
+
+
 ```{r}
-ggplot(df, aes(x = df$Sample_names, y = df$cg27441228, color = factor(df$sample))) +
+
+ggplot(df, aes(x = df$Sample_names, y = df$cg05810363, color = factor(df$sample))) +
+  ggtitle("Metilintos reikšmes", colnames(df[,2])) +
   theme(axis.title.x=element_blank(),
         axis.text.x=element_blank(),
         axis.ticks.x=element_blank()) +
   labs(y = "Pasiskirstymas") + 
    geom_point()
-ggplot(df, aes(x = df$Sample_names, y = df$cg01814152, color = factor(df$sample))) +
+
+```
+
+
+```{r}
+ggplot(df, aes(x = df$Sample_names, y = df$cg13076843, color = factor(df$sample))) +
+  ggtitle("Metilintos reikšmes", colnames(df[,3])) +
    theme(axis.title.x=element_blank(),
         axis.text.x=element_blank(),
         axis.ticks.x=element_blank()) +
   labs(y = "Pasiskirstymas")+
    geom_point()
-ggplot(df, aes(x = df$Sample_names, y = df$cg02971392, color = factor(df$sample))) +
+ggplot(df, aes(x = df$Sample_names, y = df$cg12163800, color = factor(df$sample))) +
+  ggtitle("Metilintos reikšmes", colnames(df[,4])) +
    theme(axis.title.x=element_blank(),
         axis.text.x=element_blank(),
         axis.ticks.x=element_blank()) +
   labs(y = "Pasiskirstymas")+
    geom_point()
-ggplot(df, aes(x = df$Sample_names, y = df$cg02973417, color = factor(df$sample))) +
+ggplot(df, aes(x = df$Sample_names, y = df$cg11823178, color = factor(df$sample))) +
+  ggtitle("Metilintos reikšmes", colnames(df[,5])) +
    theme(axis.title.x=element_blank(),
         axis.text.x=element_blank(),
         axis.ticks.x=element_blank()) +
   labs(y = "Pasiskirstymas")+
    geom_point()
-ggplot(df, aes(x = df$Sample_names, y = df$cg03748858, color = factor(df$sample))) +
+ggplot(df, aes(x = df$Sample_names, y = df$cg03169557, color = factor(df$sample))) +
+  ggtitle("Metilintos reikšmes", colnames(df[,6])) +
    theme(axis.title.x=element_blank(),
         axis.text.x=element_blank(),
         axis.ticks.x=element_blank()) +
@@ -120,25 +122,18 @@ Aukščiau, grafike pavaizduotos 5 metilintos eilutės, turinčios didžiausius 
 
 ```{r}
 
-getParray <- function(data, alpha){
+getParray <- function(data1, data2, alpha){
   n <- 0
-  for (i in 1:ncol(data)){
-    names <- rownames(data)[ data[,i] < alpha]
-    n <- n + length(names)
-  }
+  ttest <- matrixTests::row_t_welch(alz, con, conf.level = 1 - alpha)
+  names <- rownames(ttest)[ttest$pvalue < alpha]
+  n <- n + length(names)
   return(n)
 }
+#con ir alz <- dataframes 
 
-control <- sample$sample_id[sample$sample == "Control"]
-dataCon <- as.data.frame(data)
-sick <- sample$sample_id[sample$sample == "Alzheimer"]
-dataSick <- as.data.frame(data)
+con1 <- getParray(con ,alz,0.1)
+con1
 
-dataCon <- dataCon[, control]
-dataCon
-dataSick <- dataSick[, sick]
-dataSick
-con1 <- getParray(dataCon ,0.1 )
 
 con2 <- getParray(dataCon ,0.05)
 con3 <- getParray(dataCon ,0.01)
