@@ -14,6 +14,8 @@ knitr::opts_chunk$set(
 ```
 
 # Lyginamos grupės: sveiki/sergantys ir jų amžius.
+Hipotezė : asmens susirgimas alzheimeriu priklauso nuo amžiaus.
+H1 : asmuo, suserga alzheimeriu be amžiaus įtakos.
 ```{r}
 sample <- read.csv("../output/correctedSample.csv")
 age <- sample$age
@@ -81,6 +83,7 @@ getplot<- function(names, array, compare, colname){
 
 ```
 Žemiau, grafike pavaizduotos 5 metilintos eilutės, turinčios didžiausius skirtumus, kurie buvo gauti naudojant T test kiekvienai eilutei. Mūsų reikšmės - mažiausia(`r minimum`) ir didžiausia(`r maximum`) parodo, jog grafike esančios reikšmės yra teisingai nurodytame rėžyje.
+
 ```{r}
 par(mfrow = c(3,2))
 getplot(df$Sample_names, df$cg05810363, df$sample, colnames(df[,2]))
