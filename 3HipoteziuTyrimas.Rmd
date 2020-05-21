@@ -122,48 +122,43 @@ Aukščiau, grafike pavaizduotos 5 metilintos eilutės, turinčios didžiausius 
 
 ```{r}
 
-getParray <- function(data1, data2, alpha){
-  n <- 0
+getParray <- function(alpha){
   ttest <- matrixTests::row_t_welch(alz, con, conf.level = 1 - alpha)
   names <- rownames(ttest)[ttest$pvalue < alpha]
-  n <- n + length(names)
-  return(n)
+  return(names)
 }
 #con ir alz <- dataframes 
 
-con1 <- getParray(con ,alz,0.1)
+con1 <- getParray(0.1)
+con2 <- getParray(0.05)
+con3 <- getParray(0.01)
+length(con1)
+
+afterp1 <- data[con1,]
+afterp2 <- data[con2,]
+afterp3 <- data[con3,]
+as.data.frame(afterp1)
+
+values <- data.frame("alfa" = c(0.1, 0.05, 0.01), 
+                     "Kiek reikšmių" = c(length(con1), length(con2), length(con3)))
+values
 con1
 
-
-con2 <- getParray(dataCon ,0.05)
-con3 <- getParray(dataCon ,0.01)
-#alpha1 <- getParray(0.01)
-sick1 <- getParray(dataSick ,0.1 )
-sick2 <- getParray(dataSick ,0.05)
-sick3 <- getParray(dataSick ,0.01)
-sick1
-
-values <- data.frame("alpha" = c(0.1, 0.05, 0.01), "control" = c(con1, con2, con3),
-           "Alzheimer" = c(sick1, sick2, sick3))
-con1
-
-test <- matrixTests::row_t_onesample(dataCon, conf.level = 0.05)
+test <- matrixTests::row_t_welch(alz, con,conf.level = 0.05)
 p <- p.adjust(test$pvalue, method = "fdr")
-fdrCon <- length(p< 0.05)
-fdrCon
-test <- matrixTests::row_t_onesample(dataCon, conf.level = 0.05)
+fdrCon <- rownames(test)[p < 0.05]
+length(fdrCon)
+fdrCon <- data[fdrCon,]
 p <- p.adjust(test$pvalue, method = "bonferroni")
-bonCon <- length(p < 0.05)
-bonCon
-
+boncon <- rownames(test)[p < 0.05]
+length(boncon)
+boncon <- data[boncon,]
 
 ```
 
 
 ```{r}
-con <- matrixTests::row_t_onesample(dataCon, conf.level = 0.95)
-hist(p.adjust(con$pvalue, method = "bonferroni"))
-
+hist(boncon)
 ```
 
 
