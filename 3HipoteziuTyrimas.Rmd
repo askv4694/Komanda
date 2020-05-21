@@ -62,8 +62,14 @@ df
 
 ```
 
-
-
+```{r}
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+minimum <- min(df[,2:6])
+maximum <- max(df[,2:6])
+```
+Žemiau, grafike pavaizduotos 5 metilintos eilutės, turinčios didžiausius skirtumus, kurie buvo gauti naudojant T test kiekvienai eilutei. Mūsų reikšmės - mažiausia(`r minimum`) ir didžiausia(`r maximum`) parodo, jog grafike esančios reikšmės yra teisingai nurodytame rėžyje.
 
 ```{r}
 
@@ -110,20 +116,11 @@ ggplot(df, aes(x = df$Sample_names, y = df$cg03169557, color = factor(df$sample)
 
 ```
 
-```{r}
-library(tidyr)
-library(dplyr)
-library(ggplot2)
-minimum <- min(df[,2:6])
-maximum <- max(df[,2:6])
-```
-Aukščiau, grafike pavaizduotos 5 metilintos eilutės, turinčios didžiausius skirtumus, kurie buvo gauti naudojant T test kiekvienai eilutei. Mūsų reikšmės - mažiausia(`r minimum`) ir didžiausia(`r maximum`) parodo, jog grafike esančios reikšmės yra teisingai nurodytame rėžyje.
-
 
 ```{r}
+ttest <- matrixTests::row_t_welch(alz, con)
 
 getParray <- function(alpha){
-  ttest <- matrixTests::row_t_welch(alz, con, conf.level = 1 - alpha)
   names <- rownames(ttest)[ttest$pvalue < alpha]
   return(names)
 }
@@ -138,12 +135,11 @@ afterp1 <- data[con1,]
 afterp2 <- data[con2,]
 afterp3 <- data[con3,]
 
-test <- matrixTests::row_t_welch(alz, con,conf.level = 0.05)
-p <- p.adjust(test$pvalue, method = "fdr")
-fdrCon <- rownames(test)[p < 0.05]
+p <- p.adjust(ttest$pvalue, method = "fdr")
+fdrCon <- rownames(ttest)[p < 0.05]
 fdrCon <- data[fdrCon,]
-p <- p.adjust(test$pvalue, method = "bonferroni")
-boncon <- rownames(test)[p < 0.05]
+p <- p.adjust(ttest$pvalue, method = "bonferroni")
+boncon <- rownames(ttest)[p < 0.05]
 boncon <- data[boncon,]
 
 values <- data.frame("alfa" = c(0.1, 0.05, 0.01, "fdr", "bonferonni"), 
@@ -151,7 +147,6 @@ values <- data.frame("alfa" = c(0.1, 0.05, 0.01, "fdr", "bonferonni"),
                                    length(fdrCon), length(boncon)))
 
 knitr::kable(values)
-
 ```
 
 
