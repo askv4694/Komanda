@@ -136,8 +136,8 @@ fdrCon <- ttest[p < 0.05,]
 p <- p.adjust(ttest$pvalue, method = "bonferroni")
 boncon <- ttest[p < 0.05,]
 
-values <- data.frame("alfa" = c(0.1, 0.05, 0.01, "fdr", "bonferonni"), 
-                     "Eilutės" = c(nrow(con1), nrow(con2), nrow(con3),
+values <- data.frame("alfa" = c(0.1, 0.05, 0.01, "fdr", "bonferroni"), 
+                     "Eilutės" = c(nrow(afterp1), nrow(afterp2), nrow(afterp3),
                                    nrow(fdrCon), nrow(boncon)))
 
 knitr::kable(values)
@@ -146,7 +146,7 @@ knitr::kable(values)
 
 ```{r}
 hist(boncon$pvalue, col = rgb(255,150,10,max = 255, alpha = 80),
-     main = "Boneferroni histograma", xlab = "Reikšmės", ylab = "Dažnis")
+     main = "Bonferroni histograma", xlab = "Reikšmės", ylab = "Dažnis")
 ```
 
 
@@ -172,7 +172,7 @@ plot(hg2, col = c2, add = TRUE)
 plot(hg3, col = c3, add = TRUE)
 plot(hgfdr, col = c4, add = TRUE)
 plot(hgbon, col = c5, add = TRUE)
-legend("top", c("0.1", "0.05", "0.01", "FDR", "BONFERONNI"),
+legend("top", c("0.1", "0.05", "0.01", "FDR", "BONFERRONI"),
        fill=c(c1, c2, c3, c4, c5))
 ```
 
@@ -186,16 +186,12 @@ plot(afterp3$mean.diff,-log(afterp3$pvalue))
 plot(fdrCon$mean.diff,-log(fdrCon$pvalue))
 plot(boncon$mean.diff,-log(boncon$pvalue))
 
-
-```
-```{r}
 par(mfrow = c(1, 1))
 ```
 
 ```{r}
 if (!require("moduleColor")) install.packages("moduleColor")
 library(moduleColor)
-as.data.frame(anno)
 names <- rownames(anno)[anno$chr == "chrY"]
 temp <- anno[names,]
 chr <- ttest[names,]
@@ -210,18 +206,31 @@ for (i in 1 : nrow(chr)){
   else if (chr$cpg[i] == "S_Shelf") chr$cpgnum[i] <- 5
   else if (chr$cpg[i] == "N_Shelf") chr$cpgnum[i] <- 6
 }
-unique(chr$cpgnum)
 
 ```
 
 ```{r}
 par(mar = c(2, 4, 4, 8),                                  # Specify par parameters
     xpd = TRUE)
-plot(chr$pvalue, col = labels2colors(chr$cpgnum), pch = 19, main = "Chromosoma Y", 
+plot(-log(chr$pvalue), col = labels2colors(chr$cpgnum), pch = 19, main = "Chromosoma Y", 
      xlab = "Pozicijos", ylab = "Reikšmės")
 
 legend("topright",inset = c(- 0.3, 0),legend= unique(chr$cpg), title = "Pagal CpG salas",
        fill = labels2colors(unique(chr$cpgnum)))
 
 par(xpd=TRUE)
+```
+```{r}
+df <- data.frame("name" =character(), "pval" =  numeric(),
+                 "coef" = numeric(), stringsAsFactors = FALSE)
+
+for (i in 1:nrow(data)){
+    lm0 <- lm(data[i,] ~ sample$age)
+    lm1 <- lm(data[i,] ~ sample$age + sample$sample) 
+    anv <- anova(lm0, lm1)
+    df[i,] <- c(rownames(data)[i],anv$Pr[2],coef(lm1)[3])
+    cat(i, "\r")
+}
+df
+
 ```
