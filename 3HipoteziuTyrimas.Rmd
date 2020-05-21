@@ -137,28 +137,54 @@ length(con1)
 afterp1 <- data[con1,]
 afterp2 <- data[con2,]
 afterp3 <- data[con3,]
-as.data.frame(afterp1)
-
-values <- data.frame("alfa" = c(0.1, 0.05, 0.01), 
-                     "Kiek reikšmių" = c(length(con1), length(con2), length(con3)))
-values
-con1
 
 test <- matrixTests::row_t_welch(alz, con,conf.level = 0.05)
 p <- p.adjust(test$pvalue, method = "fdr")
 fdrCon <- rownames(test)[p < 0.05]
-length(fdrCon)
 fdrCon <- data[fdrCon,]
 p <- p.adjust(test$pvalue, method = "bonferroni")
 boncon <- rownames(test)[p < 0.05]
-length(boncon)
 boncon <- data[boncon,]
+
+values <- data.frame("alfa" = c(0.1, 0.05, 0.01, "fdr", "bonferonni"), 
+                     "Eilutės" = c(length(con1), length(con2), length(con3),
+                                   length(fdrCon), length(boncon)))
+
+knitr::kable(values)
 
 ```
 
 
 ```{r}
-hist(boncon)
+hist(boncon, col = rgb(255,150,10,max = 255, alpha = 80),
+     main = "Boneferroni histograma", xlab = "Reikšmės", ylab = "Dažnis")
+```
+
+
+```{r}
+
+hg1 <- hist(afterp1, plot = FALSE) # Save first histogram data
+hg2 <- hist(afterp2, plot = FALSE) # Save 2nd histogram data
+hg3 <- hist(afterp3, plot = FALSE)
+hgfdr <- hist(fdrCon, plot = FALSE)
+hgbon <- hist (boncon, plot = FALSE)
+```
+
+```{r}
+c1 <- rgb(255,255,0,max = 255, alpha = 80)
+c2 <- rgb(255,192,203, max = 255, alpha = 80)
+c3 <- rgb(0,255,128, max = 255, alpha = 80)
+c4 <- rgb(0,10,255, max = 255, alpha = 80)
+c5 <- rgb(255,10,0, max = 255, alpha = 80)
+
+plot(hg1, col = c1, main = "Reikšmių dažniai, pagal skirtingas alfa reikšmes",
+     xlab = "Reikšmės", ylab = "Dažnis")
+plot(hg2, col = c2, add = TRUE) 
+plot(hg3, col = c3, add = TRUE)
+plot(hgfdr, col = c4, add = TRUE)
+plot(hgbon, col = c5, add = TRUE)
+legend("top", c("0.1", "0.05", "0.01", "FDR", "BONFERONNI"),
+       fill=c(c1, c2, c3, c4, c5))
 ```
 
 
