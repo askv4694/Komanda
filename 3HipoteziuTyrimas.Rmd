@@ -244,16 +244,16 @@ df <- data.frame("name" =character(), "pvalue" =  numeric(),
                  "coef" = numeric(), stringsAsFactors = FALSE)
 chromo <- rownames(anno)[anno$chr == "chr11"]
 
-#for (i in 1:nrow(cdata)){
-#    lm0 <- lm(data[i,] ~ sample$age)
-#    lm1 <- lm(data[i,] ~ sample$age + sample$sample) 
-#    anv <- anova(lm0, lm1)
-#    df[i,] <- c(rownames(data)[i],anv$Pr[2],coef(lm1)[3])
-#    cat(i, "\r")
-#}
+for (i in 1:nrow(cdata)){
+    lm0 <- lm(data[i,] ~ sample$age)
+    lm1 <- lm(data[i,] ~ sample$age + sample$sample) 
+    anv <- anova(lm0, lm1)
+    df[i,] <- c(rownames(data)[i],anv$Pr[2],coef(lm1)[3])
+    cat(i, "\r")
+}
 
-#saveRDS(df, "../output/chr11.rds")
-df <- readRDS("../output/chr11.rds")
+saveRDS(df, "../output/chr11.rds")
+#df <- readRDS("../output/chr11.rds")
 ```
 
 Pasirinkta 11 chromosoma, viso turi `r nrow(df)` eilučių, iš kurių atrinktos patikimos p-value reikšmės.
