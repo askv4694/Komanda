@@ -16,23 +16,22 @@ knitr::opts_chunk$set(
 ```{r}
 corrected <- read.csv("../output/correctedSample.csv")
 data <- readRDS("../output/betab.rds")
-library("matrixTests")
-ttest <- matrixTests::col_t_onesample(data)
-ttest
+head(as.data.frame(data))
 ```
 
 
 ```{r}
 #Randomly shuffle the data
-sample<-data[,sample(ncol(data))]
+
+sample<-data[sample(nrow(data)),]
 
 #Create 10 equally size folds
-folds <- cut(seq(2,ncol(sample)),breaks=10,labels=FALSE)
+folds <- cut(seq(2,ncol(sample)),breaks=10, labels = FALSE)
 #Perform 10 fold cross validation
 for(i in 1:10){
   #Segement your data by fold using the which() function 
   testIndexes <- which(folds==i,arr.ind=TRUE)
-  testData <- sample[, testIndexes ]
+  testData <- sample[,testIndexes ]
   knownData <- sample[,-testIndexes ]
   #Use the test and train data partitions however you desire...
 }
@@ -40,14 +39,41 @@ for(i in 1:10){
 ```
 
 ```{r}
+
+ncol(testData)
+nrow(testData)
+ncol(knownData)
+testData <- t(testData[1:5,])
+knownData <- t(knownData[1:5,])
 testData <- as.data.frame(testData)
 knownData <- as.data.frame(knownData)
-
 ```
 
 ```{r}
-names <- colnames(knownData)
+name <- colnames(knownData[10])
+name
+corrected$sample[corrected$sample_id==name]
 
+dim(test1)
+d <- dist(testData, method = "euclidean", diag = FALSE, upper = FALSE, p = 2)
+m <- min(d)
+d <- as.data.frame(d)
+d
+sort(d)[6:8]
+colnames(d[6])
+m
+kNeighbors<- function(i, distance, k){
+  neighbors <- order(distance[i,])
+  return(ordered.neighbors[2:(k + 1)])
+  
+}
+
+getGroup <- function(test, known){
+     for (i in 1: ncol(test)){
+       d <- dist(as.matrix(test[i,], known))
+       kNeighbors()
+     }
+}
 
 ```
 
@@ -55,5 +81,4 @@ names <- colnames(knownData)
 ```{r}
 
 
-plot(knownData)
 ```
