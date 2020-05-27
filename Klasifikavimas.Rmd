@@ -16,12 +16,16 @@ knitr::opts_chunk$set(
 ```{r}
 corrected <- read.csv("../output/correctedSample.csv")
 data <- readRDS("../output/betab.rds")
+library("matrixTests")
+ttest <- matrixTests::col_t_onesample(data)
+ttest
 ```
 
 
 ```{r}
 #Randomly shuffle the data
 sample<-data[,sample(ncol(data))]
+
 #Create 10 equally size folds
 folds <- cut(seq(2,ncol(sample)),breaks=10,labels=FALSE)
 #Perform 10 fold cross validation
@@ -38,16 +42,18 @@ for(i in 1:10){
 ```{r}
 testData <- as.data.frame(testData)
 knownData <- as.data.frame(knownData)
+
+```
+
+```{r}
 names <- colnames(knownData)
 
-ncol(testData)
-ncol(knownData)
-summary(testData)
+
 ```
 
 
 ```{r}
 
 
-
+plot(knownData)
 ```
