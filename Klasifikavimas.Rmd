@@ -15,28 +15,34 @@ knitr::opts_chunk$set(
 
 ```{r}
 corrected <- read.csv("../output/correctedSample.csv")
+data <- readRDS("../output/betab.rds")
+```
 
+
+```{r}
 #Randomly shuffle the data
-sample<-corrected[sample(nrow(corrected)),]
+sample<-data[,sample(ncol(data))]
 #Create 10 equally size folds
-folds <- cut(seq(1,nrow(sample)),breaks=10,labels=FALSE)
+folds <- cut(seq(2,ncol(sample)),breaks=10,labels=FALSE)
 #Perform 10 fold cross validation
 for(i in 1:10){
   #Segement your data by fold using the which() function 
   testIndexes <- which(folds==i,arr.ind=TRUE)
-  testData <- sample[testIndexes, ]
-  knownData <- sample[-testIndexes, ]
+  testData <- sample[, testIndexes ]
+  knownData <- sample[,-testIndexes ]
   #Use the test and train data partitions however you desire...
 }
 
 ```
 
 ```{r}
+testData <- as.data.frame(testData)
+knownData <- as.data.frame(knownData)
+names <- colnames(knownData)
 
-nrow(testData)
-nrow(knownData)
-
-
+ncol(testData)
+ncol(knownData)
+summary(testData)
 ```
 
 
