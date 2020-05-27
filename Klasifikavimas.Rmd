@@ -43,36 +43,42 @@ for(i in 1:10){
 ncol(testData)
 nrow(testData)
 ncol(knownData)
-testData <- t(testData[1:5,])
-knownData <- t(knownData[1:5,])
+testData <- t(testData[1:5,1:5])
+knownData <- t(knownData[1:5,1:5])
 testData <- as.data.frame(testData)
 knownData <- as.data.frame(knownData)
 ```
 
 ```{r}
-name <- colnames(knownData[10])
-name
-corrected$sample[corrected$sample_id==name]
 
-dim(test1)
-d <- dist(testData, method = "euclidean", diag = FALSE, upper = FALSE, p = 2)
-m <- min(d)
-d <- as.data.frame(d)
-d
-sort(d)[6:8]
-colnames(d[6])
-m
-kNeighbors<- function(i, distance, k){
-  neighbors <- order(distance[i,])
-  return(ordered.neighbors[2:(k + 1)])
-  
-}
-
-getGroup <- function(test, known){
-     for (i in 1: ncol(test)){
-       d <- dist(as.matrix(test[i,], known))
-       kNeighbors()
+getGroup <- function(test, known, k){
+  names <- c()   
+  testtypes <- c()
+  for (i in 1: ncol(test)){
+     d <- dist(as.matrix(test[i,], known),  method = "euclidean")
+     m <- min(d)
+     d <- as.matrix(d)
+     d <- as.data.frame(d)
+     d <- d[,1]
+     max <- sort(d[d > 0])[1:k]
+     names <- c()
+     for (j in 1 : length(max)){
+       ind <- which(d==max[j])[1]
+       names[j] <- rownames(known)[ind]
      }
+     types <- c()
+     for (n in 1: length(names)){
+       types[n] <- corrected$sample[corrected$sample_id == names[n]]
+     }
+     t <- table(types)
+     if (t[1] > t[2]){
+       testtypes[i] <- names(t[1]);
+     }else {
+       testtypes[i] <- names(t[2]);
+     }
+     
+  }
+  return(testtypes)
 }
 
 ```
@@ -80,5 +86,6 @@ getGroup <- function(test, known){
 
 ```{r}
 
+getGroup(testData, knownData, 3)
 
 ```
