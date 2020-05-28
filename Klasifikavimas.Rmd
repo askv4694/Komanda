@@ -14,9 +14,63 @@ knitr::opts_chunk$set(
 ```
 
 ```{r}
+
+getGroup <- function(test, known, k){
+  names <- c()   
+  testtypes <- c()
+  for (i in 1: ncol(test)){
+     testing <- rbind(test[i,], known)
+     d <- dist(testing,  method = "euclidean")
+     m <- min(d)
+     d <- as.matrix(d)
+     d <- as.data.frame(d)
+     d <- d[,1]
+     max <- sort(d[d > 0])[1:k]
+     #print (max)
+     indnames <- c()
+     
+     for (j in 1 : length(max)){
+       ind <- which(d==max[j])[1]
+      # print(rownames(known)[ind])
+       indnames[j] <- rownames(testing[ind,])
+     }
+     types <- c()
+     for (n in 1: length(indnames)){
+       #print(indnames[n])
+       #print(as.character(corrected$sample[corrected$sample_id == indnames[n]]))
+       types[n] <- as.character(corrected$sample[corrected$sample_id == indnames[n]])
+      # print(types[n])
+     }
+     t <- table(types)
+     #print(t)
+     if (t[1] > t[2]){
+       testtypes[i] <- names(t[1])
+     }else{
+       testtypes[i] <- names(t[2])
+     }
+     
+  }
+  return(testtypes)
+}
+
+```
+
+```{r}
+getTested <- function(test){
+  names <- rownames(test)
+  dat <- c()
+  for (i in 1: length(names)){
+    dat[i] <- as.character(corrected$sample[corrected$sample_id == names[1]])
+  }
+  return(dat)
+}
+
+```
+
+
+```{r}
 corrected <- read.csv("../output/correctedSample.csv")
 data <- readRDS("../output/betab.rds")
-head(as.data.frame(data))
 ```
 
 
@@ -49,47 +103,11 @@ testData <- as.data.frame(testData)
 knownData <- as.data.frame(knownData)
 ```
 
-```{r}
-
-getGroup <- function(test, known, k){
-  names <- c()   
-  testtypes <- c()
-  for (i in 1: ncol(test)){
-     d <- dist(rbind(test[i,], known),  method = "euclidean")
-     m <- min(d)
-     d <- as.matrix(d)
-     d <- as.data.frame(d)
-     d <- d[,1]
-     max <- sort(d[d > 0])[1:k]
-     #print (max)
-     indnames <- c()
-     for (j in 1 : length(max)){
-       ind <- which(d==max[j])[1]
-       indnames[j] <- rownames(known)[ind]
-     }
-     types <- c()
-     for (n in 1: length(indnames)){
-       #print(indnames[n])
-       types[n] <- corrected$sample[corrected$sample_id == indnames[n]]
-       #print(types[n])
-     }
-     t <- table(types)
-     print(t)
-     if (t[1] > t[2]){
-       testtypes[i] <- names(t[1])
-     }else{
-       testtypes[i] <- names(t[2])
-     }
-     
-  }
-  return(testtypes)
-}
-
-```
 
 
 ```{r}
 
 getGroup(testData, knownData, 3)
+getTested(testData)
 
 ```
