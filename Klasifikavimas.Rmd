@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 getGroup <- function(test, known, k){
   names <- c()   
   testtypes <- c()
-  for (i in 1: ncol(test)){
+  for (i in 1: nrow(test)){
      testing <- rbind(test[i,], known)
      d <- dist(testing,  method = "euclidean")
      m <- min(d)
@@ -43,10 +43,14 @@ getGroup <- function(test, known, k){
      }
      t <- table(types)
      #print(t)
-     if (t[1] > t[2]){
-       testtypes[i] <- names(t[1])
+     if (is.na(t[2]) == FALSE){
+       if (t[1] > t[2]){
+         testtypes[i] <- names(t[1])
+       }else{
+         testtypes[i] <- names(t[2])
+       }
      }else{
-       testtypes[i] <- names(t[2])
+       testtypes[i] <- names(t[1])
      }
      
   }
@@ -67,6 +71,22 @@ getTested <- function(test){
 
 ```
 
+```{r}
+getFailed <- function(matrix){
+  tr <- 0
+  fl <- 0
+  for (i in 1:nrow(matrix)){
+    if (matrix$group[i] == matrix$tested[i]){
+        tr <- tr+1
+    }else{
+      fl <- fl +1
+    }
+  }
+  
+  return(fl/tr)
+}
+
+```
 
 ```{r}
 corrected <- read.csv("../output/correctedSample.csv")
@@ -94,20 +114,24 @@ for(i in 1:10){
 
 ```{r}
 
-ncol(testData)
-nrow(testData)
-ncol(knownData)
-testData <- t(testData[1:5,1:5])
-knownData <- t(knownData[1:5,1:5])
+testData <- t(testData[1:5,])
+knownData <- t(knownData[1:5,])
 testData <- as.data.frame(testData)
 knownData <- as.data.frame(knownData)
+#ncol(testData)
+#nrow(testData)
+#ncol(knownData)
+
+
 ```
 
 
 
 ```{r}
 
-getGroup(testData, knownData, 3)
-getTested(testData)
+group <- getGroup(testData, knownData, 3)
+tested <- getTested(testData)
+mat <- as.data.frame(cbind(group, tested))
 
+getFailed(mat)
 ```
