@@ -61,17 +61,20 @@ getGroup <- function(test, known, k){
      d <- as.data.frame(d)
      d <- d[,1]
      max <- sort(d[d > 0])[1:k]
-     names <- c()
+     #print (max)
+     indnames <- c()
      for (j in 1 : length(max)){
        ind <- which(d==max[j])[1]
-       names[j] <- rownames(known)[ind]
+       indnames[j] <- rownames(known)[ind]
      }
      types <- c()
-     for (n in 1: length(names)){
-       types[n] <- corrected$sample[corrected$sample_id == names[n]]
+     for (n in 1: length(indnames)){
+       #print(indnames[n])
+       types[n] <- corrected$sample[corrected$sample_id == indnames[n]]
+       #print(types[n])
      }
      t <- table(types)
-     print(names(t[1]))
+     print(t)
      if (t[1] > t[2]){
        testtypes[i] <- names(t[1])
      }else{
