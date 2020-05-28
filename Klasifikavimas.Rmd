@@ -55,7 +55,7 @@ getGroup <- function(test, known, k){
   names <- c()   
   testtypes <- c()
   for (i in 1: ncol(test)){
-     d <- dist(as.matrix(test[i,], known),  method = "euclidean")
+     d <- dist(rbind(test[i,], known),  method = "euclidean")
      m <- min(d)
      d <- as.matrix(d)
      d <- as.data.frame(d)
@@ -71,10 +71,11 @@ getGroup <- function(test, known, k){
        types[n] <- corrected$sample[corrected$sample_id == names[n]]
      }
      t <- table(types)
+     print(names(t[1]))
      if (t[1] > t[2]){
-       testtypes[i] <- names(t[1]);
-     }else {
-       testtypes[i] <- names(t[2]);
+       testtypes[i] <- names(t[1])
+     }else{
+       testtypes[i] <- names(t[2])
      }
      
   }
