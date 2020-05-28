@@ -14,9 +14,42 @@ knitr::opts_chunk$set(
 ```
 
 ```{r}
+#Atsirenka pagal vidurkį- jei metilinamos reikšmės > vidurkį daugiau, tuomet tinka
+getSmaller <- function(tdata){
+  tdata <- knownData
+  cols <- c()
+  for (i in 1:ncol(tdata)){
+    tab <- table(tdata[,i] > mean(tdata[,i]))
+    true <- 0
+    false <- 0
+    if (names(tab[1]) == FALSE){
+      false <- 1
+      true <- 2
+    }else{
+      true <- 1
+      false <- 2
+    }
+    if (tab[[true]] > tab[[false]]){
+      #print(names(tdata[1]))
+      cols[i] <- names(tdata[i])
+    }
+    
+  }
+  cols <- cols[!is.na(cols)]
+  cols
+  return(unique(cols))
+}
 
+```
+
+```{r}
+
+#K-kaimynai
 getGroup <- function(test, known, k){
-  names <- c()   
+  names <- c()
+  cols <- getSmaller(known)
+  known <- known[,cols]
+  test <- test[,cols]
   testtypes <- c()
   for (i in 1: nrow(test)){
      testing <- rbind(test[i,], known)
@@ -25,24 +58,20 @@ getGroup <- function(test, known, k){
      d <- as.matrix(d)
      d <- as.data.frame(d)
      d <- d[,1]
+     #Mažiausi atstumai, tiek kiek k(kaimynai)
      max <- sort(d[d > 0])[1:k]
-     #print (max)
      indnames <- c()
      
      for (j in 1 : length(max)){
        ind <- which(d==max[j])[1]
-      # print(rownames(known)[ind])
        indnames[j] <- rownames(testing[ind,])
      }
      types <- c()
+     #Gauti visi samples (serga/neserga pagal mėginio ID)
      for (n in 1: length(indnames)){
-       #print(indnames[n])
-       #print(as.character(corrected$sample[corrected$sample_id == indnames[n]]))
        types[n] <- as.character(corrected$sample[corrected$sample_id == indnames[n]])
-      # print(types[n])
      }
      t <- table(types)
-     #print(t)
      if (is.na(t[2]) == FALSE){
        if (t[1] > t[2]){
          testtypes[i] <- names(t[1])
@@ -54,12 +83,14 @@ getGroup <- function(test, known, k){
      }
      
   }
+  #grąžina kiekvieno test mėginio spėjimą - sveikas ar sergantis
   return(testtypes)
 }
 
 ```
 
 ```{r}
+#Gauti reikšmes pagal ID, kokios yra teisingos(testiniams)
 getTested <- function(test){
   names <- rownames(test)
   dat <- c()
@@ -72,6 +103,7 @@ getTested <- function(test){
 ```
 
 ```{r}
+#gauti paklaidos reikšmę
 getFailed <- function(matrix){
   tr <- 0
   fl <- 0
@@ -97,30 +129,35 @@ data <- readRDS("../output/betab.rds")
 ```{r}
 #Randomly shuffle the data
 
-sample<-data[sample(nrow(data)),]
+sample<-data[sample(nrow(data[1:100,])),]
 
 #Create 10 equally size folds
 folds <- cut(seq(2,ncol(sample)),breaks=10, labels = FALSE)
 #Perform 10 fold cross validation
-for(i in 1:10){
+rez <- c()
+#for(i in 1:10){
   #Segement your data by fold using the which() function 
   testIndexes <- which(folds==i,arr.ind=TRUE)
   testData <- sample[,testIndexes ]
   knownData <- sample[,-testIndexes ]
+  
+  testData <- as.data.frame(testData)
+  knownData <- as.data.frame(knownData)
+  group <- getGroup(testData, knownData, 3)
+  tested <- getTested(testData)
+  mat <- as.data.frame(cbind(group, tested))
+  #rez[i] <- 
+  getFailed(mat)
   #Use the test and train data partitions however you desire...
-}
+#}
 
 ```
 
 ```{r}
 
-testData <- t(testData[1:5,])
-knownData <- t(knownData[1:5,])
-testData <- as.data.frame(testData)
-knownData <- as.data.frame(knownData)
-#ncol(testData)
-#nrow(testData)
-#ncol(knownData)
+
+testData <- t(testData[1:200,])
+knownData <- t(knownData[1:200,])
 
 
 ```
@@ -129,9 +166,5 @@ knownData <- as.data.frame(knownData)
 
 ```{r}
 
-group <- getGroup(testData, knownData, 3)
-tested <- getTested(testData)
-mat <- as.data.frame(cbind(group, tested))
 
-getFailed(mat)
 ```
