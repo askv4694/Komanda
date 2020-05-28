@@ -128,7 +128,7 @@ getRate <- function(matrix, method = "s"){
   all <- fl + tr
   if (method == "f"){
     return(fl/all)
-  }else {return(1-fl/all)}
+  }else {return(1-(fl/all))}
 }
 
 ```
@@ -165,13 +165,12 @@ anno <- readRDS("../output/annotation.rds")
 ```{r}
 #Randomly shuffle the data
 set.seed(2)
-sample<-data[sample(nrow(data)),]
+sample<-data[sample(nrow(data[1:2000,])),]
 
 ```
-
+Padaryta krosvalidacija (10 folds), išskirtos 2 grupės : testuojama, t.y kuri bus nežinomoji ir žinomoji, su kuria lyginsime. Gauti vidurkiai, tačiau jie nėra tobuli, iš 10 bandymų pirmas ir septintas turi labai dideles paklaidas.
 ```{r}
 #Create 10 equally size folds
-#sample <- sample[1:1000,]
 folds <- cut(seq(2,ncol(sample)),breaks=10, labels = FALSE)
 #Perform 10 fold cross validation
 frez <- c()
@@ -195,16 +194,18 @@ for(i in 1:10){
   conf <- confMatrix(mat, conf)
   frez[i] <- getRate(mat, "f")
   srez[i] <- getRate(mat)
-  
 }
+print("Paskutinės iteracijos, klaidos tikimybės eilutė.(Kiekvienam nežinomam mėginiui)")
 frez
+print("Paklaidos vidurkis")
 mean(frez)
-srez
+print("Tikslumo vidurkis")
 mean(srez)
+print("Confusion matrix, kur TrueA - teisingai nustatytas Alzheimeris, FalseA - neteisingai, C -control.")
 conf
-#table(confA, confC)
 ```
 
+Čia bandymas su 8 chromosoma, tačiau taip pat pirmas ir septintas yra klaidingi.
 ```{r}
 cdata <- getChr(data, anno, "chr8")[1:1000,]
 sample<-cdata[sample(nrow(cdata)),]
@@ -226,17 +227,19 @@ for(i in 1:10){
   testData <- as.data.frame(testData)
   knownData <- as.data.frame(knownData)
   #Jei paskutinis = pval, tada naudojamas t.test sumažinti duomenims
-  group <- getGroup(testData, knownData, 5, "")
+  k <- c(3, 5, 7,8, 9, 10, 11, 12, 13, 15)
+  group <- getGroup(testData, knownData, k[i], "")
   tested <- getTested(testData)
   mat <- as.data.frame(cbind(group, tested))
-  conf <- confMatrix(mat, conf)
+  print(paste0("Tikslumas nuo k = " ,k[i]))
+  print(confMatrix(mat, conf))
   frez[i] <- getRate(mat, "f")
   srez[i] <- getRate(mat)
-  
 }
+print("Paklaidos vidurkis")
 mean(frez)
+print("Tikslumo vidurkis")
 mean(srez)
-conf
 ```
 
 
